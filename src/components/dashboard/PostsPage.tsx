@@ -196,10 +196,14 @@ export default function PostsPage() {
       let res;
       if (editOrder) {
         res = await api.updateWorkOrder(editOrder.id, {
+          post_id: orderForm.post_id,
           client_name: orderForm.client_name,
+          client_phone: orderForm.client_phone,
           car_model: orderForm.car_model,
           car_plate: orderForm.car_plate,
           description: orderForm.description,
+          start_time: new Date(orderForm.start_time).toISOString(),
+          duration_hours: Number(orderForm.duration_hours),
         });
       } else {
         res = await api.createWorkOrder({
@@ -611,48 +615,46 @@ export default function PostsPage() {
             </div>
             <div className="p-6 space-y-4 max-h-[70vh] overflow-y-auto">
               {/* Пост */}
-              {!editOrder && (
-                <div>
-                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Пост *</label>
-                  <select
-                    value={orderForm.post_id}
-                    onChange={(e) => setOrderForm({ ...orderForm, post_id: Number(e.target.value) })}
-                    className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary/40"
-                  >
-                    <option value={0}>Выберите пост</option>
-                    {posts.filter(p => p.is_active).map((p) => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">
+                  Пост *{editOrder && <span className="ml-1 text-primary font-normal normal-case">(перенос)</span>}
+                </label>
+                <select
+                  value={orderForm.post_id}
+                  onChange={(e) => setOrderForm({ ...orderForm, post_id: Number(e.target.value) })}
+                  className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary/40"
+                >
+                  <option value={0}>Выберите пост</option>
+                  {posts.filter(p => p.is_active).map((p) => (
+                    <option key={p.id} value={p.id}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
 
               {/* Время */}
-              {!editOrder && (
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Дата и время начала *</label>
-                    <input
-                      type="datetime-local"
-                      value={orderForm.start_time}
-                      onChange={(e) => setOrderForm({ ...orderForm, start_time: e.target.value })}
-                      className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary/40"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Длительность (ч)</label>
-                    <input
-                      type="number"
-                      min={0.5}
-                      max={12}
-                      step={0.5}
-                      value={orderForm.duration_hours}
-                      onChange={(e) => setOrderForm({ ...orderForm, duration_hours: Number(e.target.value) })}
-                      className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary/40"
-                    />
-                  </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Дата и время начала *</label>
+                  <input
+                    type="datetime-local"
+                    value={orderForm.start_time}
+                    onChange={(e) => setOrderForm({ ...orderForm, start_time: e.target.value })}
+                    className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary/40"
+                  />
                 </div>
-              )}
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1.5 block">Длительность (ч)</label>
+                  <input
+                    type="number"
+                    min={0.5}
+                    max={12}
+                    step={0.5}
+                    value={orderForm.duration_hours}
+                    onChange={(e) => setOrderForm({ ...orderForm, duration_hours: Number(e.target.value) })}
+                    className="w-full h-10 px-3 text-sm bg-secondary border-0 rounded-lg outline-none focus:ring-1 focus:ring-primary/40"
+                  />
+                </div>
+              </div>
 
               {/* Клиент */}
               <div className="grid grid-cols-2 gap-3">

@@ -244,17 +244,19 @@ def handle_post(conn, body, action, user):
         if user["role"] not in admin_roles:
             return resp(403, {"error": "Нет доступа"})
         order_id = body.get("order_id")
-        status = body.get("status")
         if not order_id:
             return resp(400, {"error": "order_id обязателен"})
         fields = []
         vals = []
-        if status:
+        if body.get("status"):
             fields.append("status=%s")
-            vals.append(status)
+            vals.append(body["status"])
         if body.get("client_name") is not None:
             fields.append("client_name=%s")
             vals.append(body["client_name"])
+        if body.get("client_phone") is not None:
+            fields.append("client_phone=%s")
+            vals.append(body["client_phone"])
         if body.get("car_model") is not None:
             fields.append("car_model=%s")
             vals.append(body["car_model"])
@@ -264,6 +266,44 @@ def handle_post(conn, body, action, user):
         if body.get("description") is not None:
             fields.append("description=%s")
             vals.append(body["description"])
+        # Перенос на другой пост
+        if body.get("post_id") is not None:
+            fields.append("post_id=%s")
+            vals.append(int(body["post_id"]))
+        # Изменение времени начала и длительности
+        if body.get("start_time") is not None and body.get("duration_hours") is not None:
+            try:
+                start_dt = datetime.fromisoformat(str(body["start_time"]).replace("Z", "+00:00"))
+                dur = float(body["duration_hours"])
+                end_dt = start_dt + timedelta(hours=dur)
+                # Проверка пересечения (исключая текущий наряд)
+                new_post_id = int(body.get("post_id") or 0)
+                if new_post_id:
+                    check_post = new_post_id
+                else:
+                    with conn.cursor() as cur:
+                        cur.execute(f"SELECT post_id FROM {SCHEMA}.work_orders WHERE id=%s", (order_id,))
+                        row = cur.fetchone()
+                        check_post = row[0] if row else None
+                if check_post:
+                    with conn.cursor() as cur:
+                        cur.execute(
+                            f"SELECT id, number FROM {SCHEMA}.work_orders "
+                            f"WHERE post_id=%s AND id != %s AND status != 'cancelled' "
+                            f"AND start_time < %s AND end_time > %s",
+                            (check_post, order_id, end_dt, start_dt)
+                        )
+                        conflict = cur.fetchone()
+                    if conflict:
+                        return resp(409, {"error": f"Пост занят: наряд-заказ №{conflict[1]}"})
+                fields.append("start_time=%s")
+                vals.append(start_dt)
+                fields.append("duration_hours=%s")
+                vals.append(dur)
+                fields.append("end_time=%s")
+                vals.append(end_dt)
+            except Exception as ex:
+                return resp(400, {"error": f"Неверный формат времени: {ex}"})
         if not fields:
             return resp(400, {"error": "Нет полей для обновления"})
         fields.append("updated_at=NOW()")
