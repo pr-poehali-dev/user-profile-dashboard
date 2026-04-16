@@ -56,4 +56,9 @@ export const api = {
     callUsers({ action: "update_role", user_id, role }),
   updateUser: (user_id: number, name: string, email: string) =>
     callUsers({ action: "update_user", user_id, name, email }),
+
+  getPublicProfile: (user_id: number | string) =>
+    fetch(`${USERS_URL}?action=public_profile&user_id=${user_id}`, {
+      method: "GET",
+    }).then(async r => ({ status: r.status, data: await r.json() })),
 };

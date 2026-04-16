@@ -78,13 +78,37 @@ def handler(event: dict, context) -> dict:
 
     conn = get_conn()
     try:
+        action = body.get("action") or qs.get("action", "")
+
+        # ── GET public profile by id (без авторизации) ───────────────────
+        # GET /?action=public_profile&user_id=5
+        if method == "GET" and action == "public_profile":
+            uid = qs.get("user_id")
+            if not uid:
+                return resp(400, {"error": "user_id обязателен"})
+            with conn.cursor() as cur:
+                cur.execute(
+                    f"SELECT id, name, email, role, status, avatar, created_at, last_login "
+                    f"FROM {SCHEMA}.users WHERE id = %s",
+                    (uid,)
+                )
+                row = cur.fetchone()
+            if not row:
+                return resp(404, {"error": "Пользователь не найден"})
+            return resp(200, {
+                "ok": True,
+                "user": {
+                    "id": row[0], "name": row[1], "email": row[2],
+                    "role": row[3], "status": row[4], "avatar": row[5] or "",
+                    "created_at": row[6], "last_login": row[7],
+                }
+            })
+
         caller = get_session_user(conn, token)
         if not caller:
             return resp(401, {"error": "Не авторизован"})
         if caller["role"] not in ADMIN_ROLES:
             return resp(403, {"error": "Недостаточно прав"})
-
-        action = body.get("action") or qs.get("action", "")
 
         # ── GET /  — список пользователей ────────────────────────────────
         if method == "GET":

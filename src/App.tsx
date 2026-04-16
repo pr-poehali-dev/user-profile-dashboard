@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+ 
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,16 +11,16 @@ import RegisterPage from "@/pages/RegisterPage";
 import TwoFactorPage from "@/pages/TwoFactorPage";
 import ForgotPasswordPage from "@/pages/ForgotPasswordPage";
 import Index from "@/pages/Index";
+import UserProfilePage from "@/pages/UserProfilePage";
 
 const queryClient = new QueryClient();
 
 type Screen = "login" | "register" | "forgot";
 
-function AppRouter() {
-  const { user, authStep, loading } = useAuth();
-  const [screen, setScreen] = useState<Screen>("login");
+const ADMIN_ROLES = ["Администратор", "Менеджер", "Модератор"];
 
-  if (loading) return (
+function Spinner() {
+  return (
     <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-4">
         <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
@@ -28,14 +30,43 @@ function AppRouter() {
       </div>
     </div>
   );
+}
 
-  // Авторизован — дашборд
-  if (user) return <Index />;
+// Охраняет /админка — пускает только авторизованных с нужной ролью
+function AdminGuard({ children }: { children: React.ReactNode }) {
+  const { user, authStep, loading } = useAuth();
+  if (loading) return <Spinner />;
+  if (authStep === "2fa") return <TwoFactorWrapper />;
+  if (!user) return <AuthFlow />;
+  if (!ADMIN_ROLES.includes(user.role)) {
+    // Обычный пользователь → его профиль
+    return <Navigate to={`/профиль/${user.id}`} replace />;
+  }
+  return <>{children}</>;
+}
 
-  // Ожидание 2FA
+// Для маршрута / — редиректит по роли
+function RootRedirect() {
+  const { user, authStep, loading } = useAuth();
+  if (loading) return <Spinner />;
+  if (authStep === "2fa") return <TwoFactorWrapper />;
+  if (!user) return <AuthFlow />;
+  if (ADMIN_ROLES.includes(user.role)) return <Navigate to="/админка" replace />;
+  return <Navigate to={`/профиль/${user.id}`} replace />;
+}
+
+// 2FA обёртка
+function TwoFactorWrapper() {
+  return <TwoFactorPage />;
+}
+
+// Блок auth-экранов (логин / регистрация / восстановление)
+function AuthFlow() {
+  const { authStep } = useAuth();
+  const [screen, setScreen] = useState<Screen>("login");
+
   if (authStep === "2fa") return <TwoFactorPage />;
 
-  // Экраны auth
   if (screen === "register") return <RegisterPage onGoLogin={() => setScreen("login")} />;
   if (screen === "forgot") return <ForgotPasswordPage onGoLogin={() => setScreen("login")} />;
 
@@ -47,14 +78,43 @@ function AppRouter() {
   );
 }
 
+// Страница профиля — доступна всем (публичная)
+function ProfileRoute() {
+  return <UserProfilePage />;
+}
+
+function AppRoutes() {
+  return (
+    <Routes>
+      {/* Публичный профиль — доступен без авторизации */}
+      <Route path="/профиль/:id" element={<ProfileRoute />} />
+
+      {/* Админка — только для персонала */}
+      <Route path="/админка" element={
+        <AdminGuard>
+          <Index />
+        </AdminGuard>
+      } />
+
+      {/* Корень — умный редирект */}
+      <Route path="/" element={<RootRedirect />} />
+
+      {/* Всё остальное → на корень */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
-      <AuthProvider>
-        <Toaster />
-        <Sonner />
-        <AppRouter />
-      </AuthProvider>
+      <BrowserRouter>
+        <AuthProvider>
+          <Toaster />
+          <Sonner />
+          <AppRoutes />
+        </AuthProvider>
+      </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
 );

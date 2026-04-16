@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 import { useAuth } from "@/context/AuthContext";
 import DashboardPage from "@/components/dashboard/DashboardPage";
@@ -21,6 +22,7 @@ const navItems = [
 
 export default function Index() {
   const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [activePage, setActivePage] = useState<Page>("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -36,6 +38,14 @@ export default function Index() {
   };
 
   const currentNav = navItems.find(n => n.id === activePage);
+
+  const handleNavClick = (id: string) => {
+    if (id === "profile" && user) {
+      navigate(`/профиль/${user.id}`);
+    } else {
+      setActivePage(id as Page);
+    }
+  };
 
   return (
     <div className="flex h-screen bg-background overflow-hidden">
@@ -66,12 +76,17 @@ export default function Index() {
           {navItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActivePage(item.id)}
-              className={`nav-link w-full ${activePage === item.id ? "active" : ""} ${!sidebarOpen ? "justify-center px-0" : ""}`}
+              onClick={() => handleNavClick(item.id)}
+              className={`nav-link w-full ${activePage === item.id && item.id !== "profile" ? "active" : ""} ${!sidebarOpen ? "justify-center px-0" : ""}`}
               title={!sidebarOpen ? item.label : undefined}
             >
               <Icon name={item.icon} size={18} className="flex-shrink-0" />
-              {sidebarOpen && <span>{item.label}</span>}
+              {sidebarOpen && (
+                <span className="flex-1 text-left">{item.label}</span>
+              )}
+              {sidebarOpen && item.id === "profile" && (
+                <Icon name="ExternalLink" size={12} className="opacity-40" />
+              )}
             </button>
           ))}
         </nav>
@@ -80,15 +95,19 @@ export default function Index() {
         <div className={`p-3 border-t border-border ${sidebarOpen ? "" : "flex flex-col items-center gap-2"}`}>
           {sidebarOpen ? (
             <div className="space-y-1">
-              <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+              <button
+                onClick={() => user && navigate(`/профиль/${user.id}`)}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
+              >
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-bold text-primary">{user?.avatar ?? "?"}</span>
                 </div>
-                <div className="min-w-0">
+                <div className="min-w-0 text-left">
                   <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
                   <p className="text-xs text-muted-foreground">{user?.role}</p>
                 </div>
-              </div>
+                <Icon name="ExternalLink" size={12} className="text-muted-foreground opacity-50 flex-shrink-0" />
+              </button>
               <button
                 onClick={logout}
                 className="nav-link w-full text-red-500 hover:bg-red-50 hover:text-red-600"
@@ -99,10 +118,18 @@ export default function Index() {
             </div>
           ) : (
             <>
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
+              <button
+                onClick={() => user && navigate(`/профиль/${user.id}`)}
+                className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer"
+                title="Мой профиль"
+              >
                 <span className="text-xs font-bold text-primary">{user?.avatar ?? "?"}</span>
-              </div>
-              <button onClick={logout} className="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 transition-colors" title="Выйти">
+              </button>
+              <button
+                onClick={logout}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 transition-colors"
+                title="Выйти"
+              >
                 <Icon name="LogOut" size={15} />
               </button>
             </>
@@ -123,7 +150,9 @@ export default function Index() {
             </button>
             <div>
               <h1 className="text-base font-semibold text-foreground">{currentNav?.label}</h1>
-              <p className="text-xs text-muted-foreground">16 апр. 2026</p>
+              <p className="text-xs text-muted-foreground">
+                {new Date().toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -137,14 +166,15 @@ export default function Index() {
             </div>
             <button className="relative w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground">
               <Icon name="Bell" size={18} />
-              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500"></span>
+              <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
             </button>
-            <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground">
-              <Icon name="Mail" size={18} />
-            </button>
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer" title={user?.name}>
+            <button
+              onClick={() => user && navigate(`/профиль/${user.id}`)}
+              className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
+              title={`${user?.name} — открыть профиль`}
+            >
               <span className="text-xs font-bold text-primary">{user?.avatar ?? "?"}</span>
-            </div>
+            </button>
           </div>
         </header>
 
