@@ -78,16 +78,24 @@ function AuthFlow() {
   );
 }
 
-// Страница профиля — доступна всем (публичная)
-function ProfileRoute() {
-  return <UserProfilePage />;
+// Охраняет /профиль/:id — только для авторизованных
+function ProfileGuard({ children }: { children: React.ReactNode }) {
+  const { user, authStep, loading } = useAuth();
+  if (loading) return <Spinner />;
+  if (authStep === "2fa") return <TwoFactorWrapper />;
+  if (!user) return <AuthFlow />;
+  return <>{children}</>;
 }
 
 function AppRoutes() {
   return (
     <Routes>
-      {/* Публичный профиль — доступен без авторизации */}
-      <Route path="/профиль/:id" element={<ProfileRoute />} />
+      {/* Профиль — только для авторизованных */}
+      <Route path="/профиль/:id" element={
+        <ProfileGuard>
+          <UserProfilePage />
+        </ProfileGuard>
+      } />
 
       {/* Админка — только для персонала */}
       <Route path="/админка" element={

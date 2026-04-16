@@ -80,7 +80,12 @@ def handler(event: dict, context) -> dict:
     try:
         action = body.get("action") or qs.get("action", "")
 
-        # ── GET public profile by id (без авторизации) ───────────────────
+        # Все запросы требуют авторизации
+        caller = get_session_user(conn, token)
+        if not caller:
+            return resp(401, {"error": "Не авторизован"})
+
+        # ── GET profile by id (только для авторизованных) ────────────────
         # GET /?action=public_profile&user_id=5
         if method == "GET" and action == "public_profile":
             uid = qs.get("user_id")
@@ -104,9 +109,6 @@ def handler(event: dict, context) -> dict:
                 }
             })
 
-        caller = get_session_user(conn, token)
-        if not caller:
-            return resp(401, {"error": "Не авторизован"})
         if caller["role"] not in ADMIN_ROLES:
             return resp(403, {"error": "Недостаточно прав"})
 

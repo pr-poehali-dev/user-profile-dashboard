@@ -60,5 +60,6 @@ export const api = {
   getPublicProfile: (user_id: number | string) =>
     fetch(`${USERS_URL}?action=public_profile&user_id=${user_id}`, {
       method: "GET",
+      headers: { "X-Auth-Token": getToken() },
     }).then(async r => ({ status: r.status, data: await r.json() })),
 };
