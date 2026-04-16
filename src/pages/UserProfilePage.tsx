@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "@/lib/api";
+import { useAuth } from "@/context/AuthContext";
 import Icon from "@/components/ui/icon";
+
+const ADMIN_ROLES = ["Администратор", "Менеджер", "Модератор"];
 
 type PublicUser = {
   id: number;
@@ -31,6 +34,8 @@ function formatDate(iso: string | null) {
 export default function UserProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const { user: currentUser } = useAuth();
+  const isAdmin = ADMIN_ROLES.includes(currentUser?.role ?? "");
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
@@ -85,13 +90,15 @@ export default function UserProfilePage() {
           </div>
           <span className="font-bold text-base">Admin<span className="text-primary">Panel</span></span>
         </div>
-        <button
-          onClick={() => navigate("/")}
-          className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <Icon name="ArrowLeft" size={15} />
-          Назад
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => navigate("/admin")}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <Icon name="ArrowLeft" size={15} />
+            Назад
+          </button>
+        )}
       </header>
 
       <div className="max-w-2xl mx-auto p-8 animate-slide-up">
