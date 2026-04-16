@@ -1,0 +1,16 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get posts unauthorized",
+      "method": "GET",
+      "path": "/?action=posts",
+      "expectedStatus": 401
+    }
+  ]
+}

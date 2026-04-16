@@ -1,0 +1,1 @@
+CREATE TABLE t_p79710325_user_profile_dashboa.posts (id SERIAL PRIMARY KEY, name VARCHAR(100) NOT NULL, description TEXT, created_by INTEGER REFERENCES t_p79710325_user_profile_dashboa.users(id), created_at TIMESTAMPTZ DEFAULT NOW(), is_active BOOLEAN DEFAULT TRUE)

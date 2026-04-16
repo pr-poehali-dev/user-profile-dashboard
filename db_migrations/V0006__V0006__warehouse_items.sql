@@ -1,0 +1,1 @@
+CREATE TABLE t_p79710325_user_profile_dashboa.warehouse_items (id SERIAL PRIMARY KEY, name VARCHAR(200) NOT NULL, sku VARCHAR(80) UNIQUE, unit VARCHAR(30) DEFAULT 'шт', quantity NUMERIC(10,2) DEFAULT 0, price NUMERIC(12,2) DEFAULT 0, category VARCHAR(100), created_at TIMESTAMPTZ DEFAULT NOW(), updated_at TIMESTAMPTZ DEFAULT NOW())

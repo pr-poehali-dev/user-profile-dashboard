@@ -1,0 +1,1 @@
+CREATE TABLE t_p79710325_user_profile_dashboa.work_order_items (id SERIAL PRIMARY KEY, work_order_id INTEGER NOT NULL REFERENCES t_p79710325_user_profile_dashboa.work_orders(id), item_id INTEGER NOT NULL REFERENCES t_p79710325_user_profile_dashboa.warehouse_items(id), quantity NUMERIC(10,2) NOT NULL, price NUMERIC(12,2))
