@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import { useAuth } from "@/context/AuthContext";
 import DashboardPage from "@/components/dashboard/DashboardPage";
 import UsersPage from "@/components/dashboard/UsersPage";
 import ProfilePage from "@/components/dashboard/ProfilePage";
@@ -19,6 +20,7 @@ const navItems = [
 ] as const;
 
 export default function Index() {
+  const { user, logout } = useAuth();
   const [activePage, setActivePage] = useState<Page>("home");
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -75,21 +77,35 @@ export default function Index() {
         </nav>
 
         {/* User mini */}
-        <div className={`p-3 border-t border-border ${sidebarOpen ? "" : "flex justify-center"}`}>
+        <div className={`p-3 border-t border-border ${sidebarOpen ? "" : "flex flex-col items-center gap-2"}`}>
           {sidebarOpen ? (
-            <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-secondary cursor-pointer transition-colors">
-              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
-                <span className="text-xs font-bold text-primary">АА</span>
+            <div className="space-y-1">
+              <div className="flex items-center gap-3 px-3 py-2 rounded-lg">
+                <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+                  <span className="text-xs font-bold text-primary">{user?.avatar ?? "?"}</span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{user?.name}</p>
+                  <p className="text-xs text-muted-foreground">{user?.role}</p>
+                </div>
               </div>
-              <div className="min-w-0">
-                <p className="text-sm font-semibold text-foreground truncate">Алексей Admin</p>
-                <p className="text-xs text-muted-foreground">Администратор</p>
-              </div>
+              <button
+                onClick={logout}
+                className="nav-link w-full text-red-500 hover:bg-red-50 hover:text-red-600"
+              >
+                <Icon name="LogOut" size={16} className="flex-shrink-0" />
+                <span>Выйти</span>
+              </button>
             </div>
           ) : (
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
-              <span className="text-xs font-bold text-primary">АА</span>
-            </div>
+            <>
+              <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
+                <span className="text-xs font-bold text-primary">{user?.avatar ?? "?"}</span>
+              </div>
+              <button onClick={logout} className="w-8 h-8 rounded-lg flex items-center justify-center text-red-400 hover:bg-red-50 transition-colors" title="Выйти">
+                <Icon name="LogOut" size={15} />
+              </button>
+            </>
           )}
         </div>
       </aside>
@@ -126,8 +142,8 @@ export default function Index() {
             <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-secondary transition-colors text-muted-foreground">
               <Icon name="Mail" size={18} />
             </button>
-            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer">
-              <span className="text-xs font-bold text-primary">АА</span>
+            <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer" title={user?.name}>
+              <span className="text-xs font-bold text-primary">{user?.avatar ?? "?"}</span>
             </div>
           </div>
         </header>
