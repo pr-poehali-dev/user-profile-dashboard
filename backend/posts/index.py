@@ -92,7 +92,8 @@ def handle_get(conn, event, user):
                 sql += " AND wo.post_id = %s"
                 args.append(int(post_id))
             if date_str:
-                sql += " AND DATE(wo.start_time AT TIME ZONE 'UTC') = %s"
+                sql += " AND wo.start_time >= %s::date AND wo.start_time < %s::date + INTERVAL '1 day'"
+                args.append(date_str)
                 args.append(date_str)
             sql += " ORDER BY wo.start_time ASC"
             cur.execute(sql, args)
@@ -136,7 +137,8 @@ def handle_get(conn, event, user):
             )
             args = [int(post_id)]
             if date_str:
-                sql += " AND DATE(wo.start_time AT TIME ZONE 'UTC') = %s"
+                sql += " AND wo.start_time >= %s::date AND wo.start_time < %s::date + INTERVAL '1 day'"
+                args.append(date_str)
                 args.append(date_str)
             sql += " ORDER BY wo.start_time ASC"
             cur.execute(sql, args)
