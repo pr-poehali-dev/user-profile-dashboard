@@ -34,7 +34,7 @@ function formatDate(iso: string | null) {
 export default function UserProfilePage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, logout } = useAuth();
   const isAdmin = ADMIN_ROLES.includes(currentUser?.role ?? "");
   const [user, setUser] = useState<PublicUser | null>(null);
   const [loading, setLoading] = useState(true);
@@ -90,15 +90,24 @@ export default function UserProfilePage() {
           </div>
           <span className="font-bold text-base">Admin<span className="text-primary">Panel</span></span>
         </div>
-        {isAdmin && (
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <button
+              onClick={() => navigate("/admin")}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Icon name="ArrowLeft" size={15} />
+              Назад
+            </button>
+          )}
           <button
-            onClick={() => navigate("/admin")}
-            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            onClick={() => logout()}
+            className="flex items-center gap-2 h-8 px-3 text-sm font-medium text-red-500 hover:bg-red-50 rounded-lg transition-colors"
           >
-            <Icon name="ArrowLeft" size={15} />
-            Назад
+            <Icon name="LogOut" size={15} />
+            Выйти
           </button>
-        )}
+        </div>
       </header>
 
       <div className="max-w-2xl mx-auto p-8 animate-slide-up">
