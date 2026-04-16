@@ -1,5 +1,5 @@
 """
-Posts API: управление постами (рабочими местами) и наряд-заказами. v2
+Posts API: управление постами (рабочими местами) и наряд-заказами. v3
 Посты: создание/редактирование/удаление — только Администратор.
 Наряд-заказы: создание — Администратор и Менеджер.
 """
@@ -41,7 +41,7 @@ def get_user_by_token(conn, token):
     return {"id": row[0], "name": row[1], "role": row[2], "status": row[3]}
 
 
-def main(event, context):
+def handler(event, context):
     method = event.get("httpMethod", "GET").upper()
     if method == "OPTIONS":
         return resp(200, {})

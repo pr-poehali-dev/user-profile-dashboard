@@ -1,5 +1,5 @@
 """
-Warehouse API: управление складом (приход/расход товаров). v2
+Warehouse API: управление складом (приход/расход товаров). v3
 Доступ: Администратор и Менеджер.
 """
 import json
@@ -39,7 +39,7 @@ def get_user_by_token(conn, token):
     return {"id": row[0], "name": row[1], "role": row[2], "status": row[3]}
 
 
-def main(event, context):
+def handler(event, context):
     method = event.get("httpMethod", "GET").upper()
     if method == "OPTIONS":
         return resp(200, {})

@@ -8,12 +8,16 @@ import ProfilePage from "@/components/dashboard/ProfilePage";
 import SettingsPage from "@/components/dashboard/SettingsPage";
 import ActivityPage from "@/components/dashboard/ActivityPage";
 import HomePage from "@/components/dashboard/HomePage";
+import PostsPage from "@/components/dashboard/PostsPage";
+import WarehousePage from "@/components/dashboard/WarehousePage";
 
-type Page = "home" | "dashboard" | "users" | "profile" | "settings" | "activity";
+type Page = "home" | "dashboard" | "posts" | "warehouse" | "users" | "profile" | "settings" | "activity";
 
 const navItems = [
   { id: "home", label: "Главная", icon: "House" },
   { id: "dashboard", label: "Дашборд", icon: "LayoutDashboard" },
+  { id: "posts", label: "Посты и наряды", icon: "ClipboardList" },
+  { id: "warehouse", label: "Склад", icon: "Package" },
   { id: "users", label: "Пользователи", icon: "Users" },
   { id: "profile", label: "Мой профиль", icon: "UserCircle" },
   { id: "settings", label: "Настройки", icon: "Settings" },
@@ -30,6 +34,8 @@ export default function Index() {
     switch (activePage) {
       case "home": return <HomePage />;
       case "dashboard": return <DashboardPage />;
+      case "posts": return <PostsPage />;
+      case "warehouse": return <WarehousePage />;
       case "users": return <UsersPage />;
       case "profile": return <ProfilePage />;
       case "settings": return <SettingsPage />;

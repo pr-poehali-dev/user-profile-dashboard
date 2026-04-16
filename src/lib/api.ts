@@ -2,6 +2,8 @@ import func2url from "../../backend/func2url.json";
 
 const AUTH_URL = func2url.auth;
 const USERS_URL = func2url.users;
+const POSTS_URL = func2url.posts;
+const WAREHOUSE_URL = func2url.warehouse;
 
 const TOKEN_KEY = "ap_token";
 const getToken = () => localStorage.getItem(TOKEN_KEY) || "";
@@ -62,4 +64,56 @@ export const api = {
       method: "GET",
       headers: { "X-Auth-Token": getToken() },
     }).then(async r => ({ status: r.status, data: await r.json() })),
+
+  // Posts & Work Orders
+  getPosts: () =>
+    fetch(`${POSTS_URL}?action=posts`, { method: "GET", headers: { "X-Auth-Token": getToken() } })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  getWorkOrders: (params?: { date?: string; post_id?: number }) => {
+    const qs = new URLSearchParams({ action: "work_orders", ...(params as Record<string, string>) }).toString();
+    return fetch(`${POSTS_URL}?${qs}`, { method: "GET", headers: { "X-Auth-Token": getToken() } })
+      .then(async r => ({ status: r.status, data: await r.json() }));
+  },
+  createPost: (name: string, description: string) =>
+    fetch(POSTS_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "create_post", name, description }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  updatePost: (id: number, name: string, description: string, is_active: boolean) =>
+    fetch(POSTS_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "update_post", post_id: id, name, description, is_active }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  createWorkOrder: (data: object) =>
+    fetch(POSTS_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "create_work_order", ...data }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  updateWorkOrder: (id: number, data: object) =>
+    fetch(POSTS_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "update_work_order", order_id: id, ...data }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+
+  // Warehouse
+  getWarehouseItems: (params?: { search?: string; category?: string }) => {
+    const qs = new URLSearchParams({ action: "items", ...(params as Record<string, string>) }).toString();
+    return fetch(`${WAREHOUSE_URL}?${qs}`, { method: "GET", headers: { "X-Auth-Token": getToken() } })
+      .then(async r => ({ status: r.status, data: await r.json() }));
+  },
+  getWarehouseTransactions: (params?: { item_id?: number; type?: string }) => {
+    const qs = new URLSearchParams({ action: "transactions", ...(params as Record<string, string>) }).toString();
+    return fetch(`${WAREHOUSE_URL}?${qs}`, { method: "GET", headers: { "X-Auth-Token": getToken() } })
+      .then(async r => ({ status: r.status, data: await r.json() }));
+  },
+  getWarehouseCategories: () =>
+    fetch(`${WAREHOUSE_URL}?action=categories`, { method: "GET", headers: { "X-Auth-Token": getToken() } })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  getWarehouseStats: () =>
+    fetch(`${WAREHOUSE_URL}?action=stats`, { method: "GET", headers: { "X-Auth-Token": getToken() } })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  createWarehouseItem: (data: object) =>
+    fetch(WAREHOUSE_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "create_item", ...data }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  updateWarehouseItem: (id: number, data: object) =>
+    fetch(WAREHOUSE_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "update_item", item_id: id, ...data }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  warehouseIncome: (item_id: number, quantity: number, price: number, note: string) =>
+    fetch(WAREHOUSE_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "income", item_id, quantity, price, note }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
+  warehouseExpense: (item_id: number, quantity: number, work_order_id?: number, note?: string) =>
+    fetch(WAREHOUSE_URL, { method: "POST", headers: { "Content-Type": "application/json", "X-Auth-Token": getToken() }, body: JSON.stringify({ action: "expense", item_id, quantity, work_order_id, note }) })
+      .then(async r => ({ status: r.status, data: await r.json() })),
 };
