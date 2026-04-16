@@ -100,12 +100,6 @@ export default function TwoFactorPage() {
             Введите 6-значный код из вашего приложения-аутентификатора (Google Authenticator, Authy и др.)
           </p>
 
-          {/* Demo hint */}
-          <div className="mb-6 p-3 bg-primary/8 border border-primary/20 rounded-xl text-center">
-            <p className="text-xs text-muted-foreground">Тестовый код:</p>
-            <p className="text-sm font-bold font-mono text-primary tracking-widest mt-0.5">1 2 3 4 5 6</p>
-          </div>
-
           {/* Code input */}
           <div className="flex gap-2 justify-center mb-2" onPaste={handlePaste}>
             {code.map((d, i) => (

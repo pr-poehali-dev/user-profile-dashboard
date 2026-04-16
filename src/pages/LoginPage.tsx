@@ -102,13 +102,6 @@ export default function LoginPage({ onGoRegister, onGoForgot }: Props) {
             <p className="text-muted-foreground text-sm mt-1">Войдите в свой аккаунт, чтобы продолжить</p>
           </div>
 
-          {/* Demo hint */}
-          <div className="mb-5 p-3 bg-primary/8 border border-primary/20 rounded-xl">
-            <p className="text-xs font-semibold text-primary mb-1">Тестовые данные для входа:</p>
-            <p className="text-xs text-muted-foreground">Админ: <span className="font-mono text-foreground">admin@mail.ru</span> / <span className="font-mono text-foreground">admin123</span></p>
-            <p className="text-xs text-muted-foreground">Менеджер: <span className="font-mono text-foreground">user@mail.ru</span> / <span className="font-mono text-foreground">user123</span></p>
-          </div>
-
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Email */}
             <div>

@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { api } from "@/lib/api";
 
 export type AuthUser = {
   id: number;
@@ -14,65 +15,80 @@ type AuthStep = "idle" | "2fa";
 type AuthContextType = {
   user: AuthUser | null;
   authStep: AuthStep;
+  loading: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; needs2fa: boolean; error?: string }>;
   verify2fa: (code: string) => Promise<{ ok: boolean; error?: string }>;
   register: (name: string, email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
 };
 
-const MOCK_USERS = [
-  { id: 1, name: "Алексей Петров", email: "admin@mail.ru", password: "admin123", role: "Администратор" as const, twofa: true, avatar: "АП" },
-  { id: 2, name: "Мария Иванова", email: "user@mail.ru", password: "user123", role: "Менеджер" as const, twofa: false, avatar: "МИ" },
-];
-
+const TOKEN_KEY = "ap_token";
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [authStep, setAuthStep] = useState<AuthStep>("idle");
-  const [pendingUser, setPendingUser] = useState<AuthUser | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [tmpToken, setTmpToken] = useState<string>("");
+
+  // Восстанавливаем сессию при загрузке
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (!token) { setLoading(false); return; }
+    api.me(token).then(({ status, data }) => {
+      if (status === 200 && data.user) {
+        setUser(data.user as AuthUser);
+      } else {
+        localStorage.removeItem(TOKEN_KEY);
+      }
+      setLoading(false);
+    }).catch(() => { localStorage.removeItem(TOKEN_KEY); setLoading(false); });
+  }, []);
 
   const login = async (email: string, password: string) => {
-    await new Promise(r => setTimeout(r, 800));
-    const found = MOCK_USERS.find(u => u.email === email && u.password === password);
-    if (!found) return { ok: false, needs2fa: false, error: "Неверный email или пароль" };
-    const authUser: AuthUser = { id: found.id, name: found.name, email: found.email, role: found.role, twofa: found.twofa, avatar: found.avatar };
-    if (found.twofa) {
-      setPendingUser(authUser);
+    const { status, data } = await api.login(email, password);
+    if (status === 403) return { ok: false, needs2fa: false, error: data.error };
+    if (status !== 200) return { ok: false, needs2fa: false, error: data.error || "Ошибка входа" };
+
+    if (data.needs2fa) {
+      setTmpToken(data.tmp_token);
       setAuthStep("2fa");
       return { ok: true, needs2fa: true };
     }
-    setUser(authUser);
+
+    localStorage.setItem(TOKEN_KEY, data.token);
+    setUser(data.user as AuthUser);
     return { ok: true, needs2fa: false };
   };
 
   const verify2fa = async (code: string) => {
-    await new Promise(r => setTimeout(r, 600));
-    if (code === "123456") {
-      setUser(pendingUser);
-      setPendingUser(null);
-      setAuthStep("idle");
-      return { ok: true };
-    }
-    return { ok: false, error: "Неверный код. Попробуйте ещё раз" };
-  };
+    const { status, data } = await api.verify2fa(tmpToken, code);
+    if (status !== 200) return { ok: false, error: data.error || "Неверный код" };
 
-  const register = async (name: string, email: string, password: string) => {
-    await new Promise(r => setTimeout(r, 900));
-    if (MOCK_USERS.find(u => u.email === email)) {
-      return { ok: false, error: "Пользователь с таким email уже существует" };
-    }
+    localStorage.setItem(TOKEN_KEY, data.token);
+    setUser(data.user as AuthUser);
+    setTmpToken("");
+    setAuthStep("idle");
     return { ok: true };
   };
 
+  const register = async (name: string, email: string, password: string) => {
+    const { status, data } = await api.register(name, email, password);
+    if (status === 201) return { ok: true };
+    return { ok: false, error: data.error || "Ошибка регистрации" };
+  };
+
   const logout = () => {
+    const token = localStorage.getItem(TOKEN_KEY);
+    if (token) api.logout(token);
+    localStorage.removeItem(TOKEN_KEY);
     setUser(null);
-    setPendingUser(null);
+    setTmpToken("");
     setAuthStep("idle");
   };
 
   return (
-    <AuthContext.Provider value={{ user, authStep, login, verify2fa, register, logout }}>
+    <AuthContext.Provider value={{ user, authStep, loading, login, verify2fa, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

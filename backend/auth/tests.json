@@ -1,0 +1,52 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Register duplicate returns 409",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "register", "name": "Тест Тестов", "email": "admin@mail.ru", "password": "test1234"},
+      "expectedStatus": 409,
+      "expectedBody": {"error": "Пользователь с таким email уже существует"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login without 2FA",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "email": "user@mail.ru", "password": "user123"},
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true, "needs2fa": false},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login with 2FA",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "email": "admin@mail.ru", "password": "admin123"},
+      "expectedStatus": 200,
+      "expectedBody": {"ok": true, "needs2fa": true},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Login wrong password",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "login", "email": "admin@mail.ru", "password": "wrongpass"},
+      "expectedStatus": 401,
+      "expectedBody": {"error": "Неверный email или пароль"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Me without token",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401
+    }
+  ]
+}
