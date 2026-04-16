@@ -1,0 +1,23 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "Get users without token",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401
+    },
+    {
+      "name": "Create user without token",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "create", "name": "Test", "email": "t@t.ru", "password": "pass123"},
+      "expectedStatus": 401
+    }
+  ]
+}
