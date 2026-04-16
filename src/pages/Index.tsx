@@ -41,7 +41,7 @@ export default function Index() {
 
   const handleNavClick = (id: string) => {
     if (id === "profile" && user) {
-      navigate(`/профиль/${user.id}`);
+      navigate(`/profile/${user.id}`);
     } else {
       setActivePage(id as Page);
     }
@@ -96,7 +96,7 @@ export default function Index() {
           {sidebarOpen ? (
             <div className="space-y-1">
               <button
-                onClick={() => user && navigate(`/профиль/${user.id}`)}
+                onClick={() => user && navigate(`/profile/${user.id}`)}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-secondary transition-colors"
               >
                 <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
@@ -119,7 +119,7 @@ export default function Index() {
           ) : (
             <>
               <button
-                onClick={() => user && navigate(`/профиль/${user.id}`)}
+                onClick={() => user && navigate(`/profile/${user.id}`)}
                 className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer"
                 title="Мой профиль"
               >
@@ -169,7 +169,7 @@ export default function Index() {
               <span className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-red-500" />
             </button>
             <button
-              onClick={() => user && navigate(`/профиль/${user.id}`)}
+              onClick={() => user && navigate(`/profile/${user.id}`)}
               className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center cursor-pointer hover:ring-2 hover:ring-primary/30 transition-all"
               title={`${user?.name} — открыть профиль`}
             >

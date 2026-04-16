@@ -40,7 +40,7 @@ function AdminGuard({ children }: { children: React.ReactNode }) {
   if (!user) return <AuthFlow />;
   if (!ADMIN_ROLES.includes(user.role)) {
     // Обычный пользователь → его профиль
-    return <Navigate to={`/профиль/${user.id}`} replace />;
+    return <Navigate to={`/profile/${user.id}`} replace />;
   }
   return <>{children}</>;
 }
@@ -51,8 +51,8 @@ function RootRedirect() {
   if (loading) return <Spinner />;
   if (authStep === "2fa") return <TwoFactorWrapper />;
   if (!user) return <AuthFlow />;
-  if (ADMIN_ROLES.includes(user.role)) return <Navigate to="/админка" replace />;
-  return <Navigate to={`/профиль/${user.id}`} replace />;
+  if (ADMIN_ROLES.includes(user.role)) return <Navigate to="/admin" replace />;
+  return <Navigate to={`/profile/${user.id}`} replace />;
 }
 
 // 2FA обёртка
@@ -91,14 +91,14 @@ function AppRoutes() {
   return (
     <Routes>
       {/* Профиль — только для авторизованных */}
-      <Route path="/профиль/:id" element={
+      <Route path="/profile/:id" element={
         <ProfileGuard>
           <UserProfilePage />
         </ProfileGuard>
       } />
 
       {/* Админка — только для персонала */}
-      <Route path="/админка" element={
+      <Route path="/admin" element={
         <AdminGuard>
           <Index />
         </AdminGuard>
